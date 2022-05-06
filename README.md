@@ -7,7 +7,7 @@
 This program will try to track the fishing bobber in the water in Minecraft.
 Once the bobber moves down a significant amount of pixels, the right mouse is clicked on a defined place on the screen.
 
-Feel free to change the program, tune parameters, play around improve upon this **_lazy_** solution.
+Feel free to change the program, tune parameters, play around and improve upon this **_lazy_** solution.
 
 ---
 
