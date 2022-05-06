@@ -37,7 +37,7 @@ print(f'template_shape:')
 print(f'height:\t{template_height}')
 print(f'width:\t{template_width}')
 
-plt.title("Manually selected flöjt template")
+plt.title("Manually selected bobber template")
 plt.imshow(template)
 
 plt.show()
@@ -63,14 +63,11 @@ def grab(queue):
 
 def process(queue):
     # type: (Queue) -> None
-
     frame_count = 0
-    # output = "screenshots/file_{}.png"
-    # to_png = mss.tools.to_png
 
     print(f'frame_count: {frame_count}')
 
-    flöjt_positions = []
+    bobber_positions = []
 
     while True:
         last_time = time.time()
@@ -84,7 +81,7 @@ def process(queue):
         image = cv2.blur(gray_image, ksize) 
         # image = gray_image
 
-        brightness = 125
+        brightness = 140
         contrast = 250
         img = np.int16(image)
         img = img * (contrast/127+1) - contrast + brightness
@@ -97,18 +94,18 @@ def process(queue):
         x, y = ij[::-1]
         
         # Store the ball position
-        flöjt_positions.append((x + (template_width / 2), y + (template_height / 2)))
+        bobber_positions.append((x + (template_width / 2), y + (template_height / 2)))
 
 
-        #print(flöjt_positions[-1])
+        #print(bobber_positions[-1])
 
         # Do we have napp på kroken?
-        # If the current flöjt position differs grately from the last position
+        # If the current bobber position differs grately from the last position
         # then we probably have napp
-        if (len(flöjt_positions) > 20):
+        if (len(bobber_positions) > 20):
 
-            current_position = flöjt_positions[-1]
-            last_position = flöjt_positions[-2]
+            current_position = bobber_positions[-1]
+            last_position = bobber_positions[-2]
            
             # If some new position is way out there, then we take the previous value and move on
             if current_position[1] - last_position[1] > 30:
@@ -118,10 +115,10 @@ def process(queue):
             x_temp = current_position[0] - last_position[0]
             y_temp = current_position[1] - last_position[1]
 
-            x_temp_2 = flöjt_positions[-2][0] - flöjt_positions[-2][0]
+            x_temp_2 = bobber_positions[-2][0] - bobber_positions[-2][0]
 
-            y_temp_2 = flöjt_positions[-2][1] - flöjt_positions[-3][1]
-            y_temp_3 = flöjt_positions[-3][1] - flöjt_positions[-4][1]
+            y_temp_2 = bobber_positions[-2][1] - bobber_positions[-3][1]
+            y_temp_3 = bobber_positions[-3][1] - bobber_positions[-4][1]
             
             # print(f'x_temp: {x_temp}')
             # print(f'y_temp: {y_temp} y_temp_2: {y_temp_2} y_temp_3: {y_temp_3}')
@@ -133,14 +130,14 @@ def process(queue):
                     time.sleep(2)
                     pyautogui.rightClick(0, 0)
 
-                    flöjt_positions = []
+                    bobber_positions = []
 
-            if (len(flöjt_positions) > 2):
+            if (len(bobber_positions) > 2):
                 image = cv2.rectangle(image, 
-                    (int(flöjt_positions[-1][0] - template_width / 2), 
-                    (int(flöjt_positions[-1][1] - template_height / 2))
-                ),  (int(flöjt_positions[-1][0] + template_width / 2), 
-                    (int(flöjt_positions[-1][1] + template_height / 2))), 
+                    (int(bobber_positions[-1][0] - template_width / 2), 
+                    (int(bobber_positions[-1][1] - template_height / 2))
+                ),  (int(bobber_positions[-1][0] + template_width / 2), 
+                    (int(bobber_positions[-1][1] + template_height / 2))), 
                     (255, 0, 255),
                 5)
 
