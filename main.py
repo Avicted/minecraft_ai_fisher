@@ -21,6 +21,8 @@ import mss
 import pyautogui
 import mss.tools
 
+pyautogui.FAILSAFE = False
+
 
 # Display the manually selected template of the object to be tracked
 # template = mpimg.imread("template.jpeg")
@@ -44,15 +46,16 @@ plt.show()
 def grab(queue):
     # type: (Queue) -> None
 
-    rect = {"top": 250, "left": 1080, "width": 600, "height": 600}
+    rect = {"top": 350, "left": 1080 + 200, "width": 700, "height": 700}
 
     with mss.mss() as sct:
         while True:
-            time.sleep(0.5)
 
             # Get raw pixels from the screen, save it to a Numpy array
             img = numpy.array(sct.grab(rect))
             queue.put(img)
+            # time.sleep(0.2)
+            time.sleep(0.25)
 
     # Tell the other worker to stop
     queue.put(None)
@@ -75,68 +78,76 @@ def process(queue):
 
         gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         # ksize
-        ksize = (25, 25)
+        ksize = (11, 11)
   
         # Using cv2.blur() method 
-        image = cv2.blur(img, ksize) 
+        image = cv2.blur(gray_image, ksize) 
+        # image = gray_image
+
+        brightness = 125
+        contrast = 250
+        img = np.int16(image)
+        img = img * (contrast/127+1) - contrast + brightness
+        img = np.clip(img, 0, 255)
+        image = np.uint8(img)
 
         # image = img
-        result = match_template(gray_image, template)
+        result = match_template(image, template)
         ij = np.unravel_index(np.argmax(result), result.shape)
         x, y = ij[::-1]
         
         # Store the ball position
         flöjt_positions.append((x + (template_width / 2), y + (template_height / 2)))
 
+
         #print(flöjt_positions[-1])
 
         # Do we have napp på kroken?
         # If the current flöjt position differs grately from the last position
         # then we probably have napp
-        if (len(flöjt_positions) > 5):
+        if (len(flöjt_positions) > 20):
+
             current_position = flöjt_positions[-1]
             last_position = flöjt_positions[-2]
+           
+            # If some new position is way out there, then we take the previous value and move on
+            if current_position[1] - last_position[1] > 30:
+                continue
+                #current_position[1] = last_position[1]
 
             x_temp = current_position[0] - last_position[0]
             y_temp = current_position[1] - last_position[1]
 
+            x_temp_2 = flöjt_positions[-2][0] - flöjt_positions[-2][0]
+
             y_temp_2 = flöjt_positions[-2][1] - flöjt_positions[-3][1]
             y_temp_3 = flöjt_positions[-3][1] - flöjt_positions[-4][1]
             
-            #print(f'x_temp: {x_temp}')
-            print(f'y_temp: {y_temp}')
-            print(f'y_temp_2: {y_temp_2}')
+            # print(f'x_temp: {x_temp}')
+            # print(f'y_temp: {y_temp} y_temp_2: {y_temp_2} y_temp_3: {y_temp_3}')
 
-            if (y_temp > 50 and len(flöjt_positions) > 10):
-                print(f'WE HAVE NAPP!')
-                pyautogui.rightClick(0, 0)
-                time.sleep(1)
-                pyautogui.rightClick(0, 0)
-                #if (y_temp_3 < -10):
-                #if (y_temp_3 < -20):
-                #if (y_temp_2 > 30):
+            if (abs(y_temp) > 25):
+                if (abs(y_temp_2) > 20 or abs(y_temp_3) > 20):
+                    print(f'WE HAVE NAPP!')
+                    pyautogui.rightClick(0, 0)
+                    time.sleep(2)
+                    pyautogui.rightClick(0, 0)
 
+                    flöjt_positions = []
 
+            if (len(flöjt_positions) > 2):
+                image = cv2.rectangle(image, 
+                    (int(flöjt_positions[-1][0] - template_width / 2), 
+                    (int(flöjt_positions[-1][1] - template_height / 2))
+                ),  (int(flöjt_positions[-1][0] + template_width / 2), 
+                    (int(flöjt_positions[-1][1] + template_height / 2))), 
+                    (255, 0, 255),
+                5)
 
-        # Highlight matched region
-        # h_template, w_template = template.shape
-        #print(f'h_template: {h_template}')
-        #print(f'w_template: {w_template}')
-        #print(f'x: {x}')
-        #print(f'y: {y}')
-
-        image = cv2.rectangle(image, 
-            (int(flöjt_positions[-1][0] - template_width / 2), 
-            (int(flöjt_positions[-1][1] - template_height / 2))
-        ),  (int(flöjt_positions[-1][0] + template_width / 2), 
-            (int(flöjt_positions[-1][1] + template_height / 2))), 
-            (255, 0, 255),
-        5)
-
-        cv2.imshow('gray_image', image)
+        cv2.imshow('minecraft_ai_fisher', image)
 
 
-        print("time to process the frame: {}".format(1 / (time.time() - last_time)))
+        # print("time to process the frame: {}".format(1 / (time.time() - last_time)))
 
 
         # Press "q" to quit
