@@ -65,10 +65,10 @@ def process(queue):
         img = queue.get()
 
         gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        ksize = (11, 11)
+        ksize = (12, 12)
         image = cv2.blur(gray_image, ksize) 
 
-        brightness = 140
+        brightness = 120
         contrast = 250
         img = np.int16(image)
         img = img * (contrast/127+1) - contrast + brightness
@@ -85,7 +85,7 @@ def process(queue):
         # Do we have napp på kroken?
         # If the current bobber position differs grately from the last position
         # then we probably have napp
-        if (len(bobber_positions) > 50):
+        if (len(bobber_positions) > 20):
             current_position = bobber_positions[-1]
             last_position = bobber_positions[-2]
            
