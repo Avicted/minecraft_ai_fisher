@@ -22,7 +22,7 @@ I'm lazy.
 Run the `run.sh` shell script to initialize the Python virtual
 environment, install the dependencies and start the program.
 
-Place your minecraft window somewhere on your screen and change the `rect` on line `49` in `main.py`
+Place your minecraft window somewhere on your screen and change the `rect` on line `42` in `main.py`
 
 ---
 
